@@ -29,7 +29,7 @@ b = Matrix([6, 4, 10, 8])
 
 # Vector of costs (relative to the linear objective function)
 #c = Matrix([-1, -1, 0, 0, 0, 0, 0, 0]).transpose()
-c = Matrix([0, 0, 0, 0, 1, 1, 1, 1]).transpose()
+c = Matrix([0, 0, 0, 0, 0, 0, 1, 1]).transpose()
 
 # Indexes of A columns corresponding to the base
 base_idx = [4, 5, 6, 7]
