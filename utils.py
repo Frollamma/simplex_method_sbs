@@ -1,6 +1,9 @@
 import numpy as np
 from sympy.matrices import Matrix
-from sympy import pprint
+from sympy import pretty, pprint
+from sympy.parsing.sympy_parser import parse_expr
+from sympy.matrices.dense import MutableDenseMatrix
+
 
 # Generic
 ## Math
@@ -10,14 +13,14 @@ def first_negative_item_index(my_list):
             return i
     return -1
 
-def argmin_of_fractions(numerators, denominators):
-    # We assume numerators are positive
+def argmin_of_positive_fractions(numerators, denominators):
+    # In our case numerators are nonnegative
     n = len(numerators)
     if n != len(denominators):
         raise ValueError("Iterables with different lenghts")
     
     i = 0
-    while denominators[i] == 0 and i < n:
+    while i < n and denominators[i] <= 0:
         i += 1
     
     if i == n:
@@ -33,6 +36,57 @@ def argmin_of_fractions(numerators, denominators):
                 current_min = possible_min
     return i
                 
+## Parsing
+def input_sympy(prompt=''):
+    return parse_expr(input(prompt))
+
+def input_matrix(prompt='') -> MutableDenseMatrix:
+    matrix = parse_expr(f"Matrix({input(prompt)})")
+    if type(matrix) == MutableDenseMatrix:
+        return matrix
+    else:
+        raise ValueError("Input is not a Matrix")
+
+def input_indexes(prompt='') -> list[int]:
+        text = input(prompt)
+        indexes = text.strip('[]').replace(' ', '').split(',')
+        return [int(i)-1 for i in indexes]
+
+def is_degenerate(x, n, base_indexes):
+    # all([x(i) == 0 for i in base_indexes])
+
+    exists_zero_outside_base = False
+    i = 0
+    while i < n:
+        if i in base_indexes:
+            if x(i) == 0:
+                exists_zero_outside_base = True
+        else:
+            # All x(i) should > 0, if there's a x(i) = 0, we return False
+            if x(i) == 0:
+                return False
+
+    return exists_zero_outside_base
+
+def get_variable_string_by_index(index):
+    return f'x_{index+1}'
+
+def get_variables_string_by_indexes(indexes):
+    return [get_variable_string_by_index(i) for i in indexes]
+
+## Printing
+def print_problem(A, b, c, mode='plain'):
+    '''Mode can be \'plain\' or \'latex\''''
+    print("We want to solve")
+    print(pretty(A), "x", "=", pretty(b)) # Doesn't display properly
+
+
+def print_tableau(tableau, mode='plain'):
+    '''Mode can be \'plain\' or \'latex\''''
+    if mode=='plain':
+        pprint(tableau)
+    elif mode=='LaTeX':# TEMP - IMPR
+        pass
 
 
 ## Numerical approximation (I think I'll delete this...)
@@ -111,13 +165,6 @@ def compose_tableau(x_B, z, reduced_costs, C):
     tableau = row.col_join(tableau)
     
     return tableau
-
-def print_tableau(tableau, mode='plain'):
-    '''Mode can be \'plain\' or \'latex\''''
-    if mode=='plain':
-        pprint(tableau)
-    elif mode=='LaTeX':# TEMP - IMPR
-        pass
 
 
 

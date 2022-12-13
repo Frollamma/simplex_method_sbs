@@ -1,0 +1,5 @@
+mpmath==1.2.1
+numpy==1.23.5
+ordered-set==4.1.0
+PyLaTeX==1.4.1
+sympy==1.11.1
