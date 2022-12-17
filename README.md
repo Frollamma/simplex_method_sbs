@@ -2,6 +2,10 @@
 This project aims to get a working implementation of the Simplex Method capable of showing intermediate steps. In particular, we focus on the Full Tableau Simplex Method, for now. The output formats will be plain text (redirected to stdout or a file) and $\LaTeX$ (as a PDF and `.tex` file).
 
 # Installation
+To install type
+```
+pip install -r requirements.txt
+```
 To run it type
 ```
 python main.py
