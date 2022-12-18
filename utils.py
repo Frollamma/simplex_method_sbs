@@ -36,7 +36,37 @@ def argmin_of_positive_fractions(numerators, denominators):
                 i = k
                 current_min = possible_min
     return i
-                
+
+# def is_integer_matrix(A: MutableDenseMatrix) -> Boolean:
+#     if all([a.is_integer for a in list(A)]):
+#         return True
+#     return False
+
+# def is_totally_unimodular_matrix(A: MutableDenseMatrix) -> bool:
+#     m = min([A.rows, A.cols])
+#     for submatrix_dim in range(1, m+1):
+#         # We're considering a submatrix of submatrix_dim rows and submatrix_dim columns
+#         for i in range(A.rows - submatrix_dim + 1):
+#             for j in range(A.cols - submatrix_dim + 1):
+#                 submatrix_det = A.row(range(i, i + submatrix_dim)).col(range(j, j + submatrix_dim)).det()
+#                 if submatrix_det not in [-1, 0, 1]:
+#                     return False
+#     return True
+
+# def is_unimodular_matrix(A: MutableDenseMatrix) -> bool:
+#     m = min([A.rows, A.cols])
+#     for k in range(m):
+#         # We're considering a submatrix of m rows and m columns
+
+#         # Now we have to find all the possible combinations of m indices (regardless of order)... - IMPR
+
+#         for i in range(A.rows - m + 1):
+#             for j in range(A.cols - m + 1):
+#                 submatrix_det = A.row(range(i, i + m)).col(range(j, j + m)).det()
+#                 if submatrix_det not in [-1, 0, 1]:
+#                     return False
+#     return True
+
 ## Parsing
 def input_sympy(prompt=''):
     return parse_expr(input(prompt))
@@ -90,20 +120,6 @@ def print_tableau(tableau, mode='plain'):
         pass
 
 
-## Numerical approximation (I think I'll delete this...)
-# def is_tolerable(value, tolerance=10**(-7)):
-#     return (abs(value) <= tolerance).all()
-
-# def is_solution_approx(A, b, x):
-#     return is_tolerable(np.dot(A, x) - b)
-
-# def is_feasible_solution_approx(A, b, x):
-#     return (x >= 0).all() and is_solution_approx(A, b, x)
-
-# def is_basic_solution_approx(A, b, x, tol=10**(-7)):
-#     return is_solution_approx(A, b, x) and True# TEMP! - CHECK L. 2 p. 41
-
-
 # Linear Programming Problem theory
 def is_standard_form(A, b, c, A_rank = None):# IMPR
     # At thee moment I get input in the form of the triple (A, b, c), so I can perform few checks for now. In the future I'll get input in a different form (more similar to real problems) and I'll have to run more checks - IMPR
@@ -139,7 +155,7 @@ def is_solution(A, b, x):
 def is_feasible_solution(A, b, x):
     return (np.asarray(list(x)) >= 0).all() and is_solution(A, b, x) # IMPR
 
-# def is_basic_solution_approx(A, b, x):
+# def is_basic_solution(A, b, x):
     # pass
 # def is_basic_feasible_solution(A, b, x):
     # pass
@@ -270,8 +286,7 @@ def twophases_method(A, b, c, n=None, m=None, base_indexes=None):
     # Phase 2
     if exit_code == 1:
         if v.is_zero:
-            # return [1, v[*range(m)]]                  # It should work wwith python 3.11 (try it) - IMPR
-            return [1, v.row(list(range(m)))]        # Know that this might be a degenarate solution, you should handle this - IMPR
+            return [1, v.row(range(m))]     # Keep in mind that some auxiliary variables migth be still in base, you should handle it - IMPR
         else:
             return [0, v]
             

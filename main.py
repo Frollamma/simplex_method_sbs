@@ -48,6 +48,10 @@ method = "TwoPhases"# TEMP
 n = A.cols
 m = A.rows
 
+# This is useful for integer linear programming (but you have to add much more) - IMPR
+# if is_unimodular_matrix(A):
+#     print("Matrix A is unimodular!")
+
 if method == "Complete":
     # This method is capable of choosing which of the other methods to use and when to use them
     pass
