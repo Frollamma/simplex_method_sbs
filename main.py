@@ -14,9 +14,11 @@ A = input_matrix("Enter matrix A: ")                # Matrix of technical coeffi
 b = input_matrix("Enter vector b: ")                # Right-hand sides
 c = input_matrix("Enter vector c: ").transpose()    # Vector of costs (relative to the linear objective function)
 
-# Indexes of variable in the base at first iteration
-base_idx = input_indexes("Enter columns indexes of initial base matrix separated by comma: ")
 
+A = Matrix([
+    [0, 1, 4],
+    [-2, 1, 6]
+])
 # A = Matrix([
 #     [0, 1, 4, 1, 0],
 #     [-2, 1, 6, 0, 1]
@@ -33,67 +35,44 @@ base_idx = input_indexes("Enter columns indexes of initial base matrix separated
 # ])
 # A = Matrix([[1, 2, 3/2], [4, 5, 6], [7, 23, 5]])
 
-# b = Matrix([2, 2])
+b = Matrix([2, 2])
 # b = Matrix([12, 5])
 # b = Matrix([6, 4, 10, 8])
 
-# c = Matrix([0, 0, 0, 1, 1]).transpose()
+c = Matrix([2, 3, 0]).transpose()
 #c = Matrix([-1, -1, 0, 0, 0, 0, 0, 0]).transpose()
 # c = Matrix([0, 0, 0, 0, 0, 0, 1, 1]).transpose()
 
-m = A.rows
+method = "TwoPhases"# TEMP
+
 n = A.cols
+m = A.rows
 
-if not is_standard_form(A, b, c):
-    raise ValueError("Problem not in standard form")
+if method == "Complete":
+    # This method is capable of choosing which of the other methods to use and when to use them
+    pass
+elif method == "FullTableau":
+    [exit_code, v] = fulltableau_method(A, b, c, n, m)
 
-if len(base_idx) != m:
-    raise ValueError(f"Number of base indexes doesn't match rank of technological coefficients matrix: {m}")
+    if exit_code == 1:
+        print(f"Found optimal finite solution:")
+        pprint(v)
+    elif exit_code == 0:
+        print(f"There's no finite optimal solution. The direction of improvement is")
+        pprint(v)
+    elif exit_code == -1:
+        print(f"Reached max iterations. Last feasible basic solution is")
+        pprint(v)
 
-# Starting base matrix
-B = A[:, base_idx]
+elif method == "TwoPhases":
+    [exit_code, v] = twophases_method(A, b, c, n, m)
 
-if B.det() == 0:
-    raise ValueError("Base matrix non invertible")
+    if exit_code == 1:
+        print(f"Found feasible basic solution for the original problem: {v}")
+    elif exit_code == 0:
+        print(f"There's no feasible basic solution for the original problem.")
+    elif exit_code == -1:
+        print(f"Reached max iterations. Last feasible basic solution for the auxiliary problem is {v}")
+else:
+    raise ValueError(f"Method '{method}' not implemented")
 
-
-# print_problem(A, b, c)        # IMPR: doesn't work
-print(f"In the base we have: {', '.join(get_variables_string_by_indexes(base_idx))}")
-
-max_iterations = 20
-counter = 0
-while counter < max_iterations:
-    [x_B, z, rc, C] = compute_tableau(A, b, c, base_idx)
-    tableau = compose_tableau(x_B, z, rc, C)
-    print_tableau(tableau)
-
-    # j = np.where(np.asarray(rc) < 0)[0][0]
-    j = first_negative_item_index(rc)
-    # print(rc)
-    # print(j)
-    if j == -1: # All reduced costs are nonnegative
-        x = [x_B[base_idx.index(i)] if i in base_idx else 0 for i in range(n)]# IMPR: it seems inefficient
-        print(f"Found optimal finite solution: {x}")
-        break
-    else:
-        # print([x_B[k]/A[k, j] for k in range(m)])
-        # print([x_B[k]/A[k, j] for k in range(m) if A[k, j] != 0])
-        # # i = np.argmin([x_B[k]/A[k, j] for k in range(m) if A[k, j] != 0])     # This is not the solution because gets the wrong index
-        # i = np.argmin([x_B[k]/A[k, j] for k in range(m)])# Division by zero can happen and cause problems... - CHECK
-
-        i = argmin_of_positive_fractions(x_B, A[:, j])
-        if i == -1:
-            print(f"There's no finite optimal solution. The direction of improvement is")
-            pprint(-A[:, j])
-            break
-
-        print(f"{get_variable_string_by_index(j)} enters the base, {get_variable_string_by_index(base_idx[i])} exits the base")
-        #print(base_idx)
-        base_idx[i] = j
-        #print(base_idx)
-
-        theta = A[i, j]
-        A = A / theta
-        b = b / theta
-
-    counter += 1

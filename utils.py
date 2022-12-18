@@ -1,6 +1,7 @@
 import numpy as np
-from sympy.matrices import Matrix
-from sympy import pretty, pprint
+from sympy.logic.boolalg import Boolean
+from sympy.matrices import Matrix, ones, zeros
+from sympy import eye, pretty, pprint
 from sympy.parsing.sympy_parser import parse_expr
 from sympy.matrices.dense import MutableDenseMatrix
 
@@ -14,7 +15,7 @@ def first_negative_item_index(my_list):
     return -1
 
 def argmin_of_positive_fractions(numerators, denominators):
-    # In our case numerators are nonnegative
+    # In our case numerators are nonnegative (this is not important for the algorithm itself but it guarantees that if we get a result, it is positive)
     n = len(numerators)
     if n != len(denominators):
         raise ValueError("Iterables with different lenghts")
@@ -24,7 +25,7 @@ def argmin_of_positive_fractions(numerators, denominators):
         i += 1
     
     if i == n:
-        # This means that every denominator is 0
+        # This means that every denominator is nonpositive
         return -1
 
     current_min = numerators[i]/denominators[i]
@@ -144,9 +145,13 @@ def is_feasible_solution(A, b, x):
     # pass
 
 
-# Full tableau Method
+# Simplex Method
 def get_base_costs(c, base_indexes):
     return Matrix([c[i] for i in base_indexes]).transpose()
+
+def compose_solution(x_B, base_indexes, n):
+    '''n is solution lenght'''
+    return Matrix([x_B[base_indexes.index(i)] if i in base_indexes else 0 for i in range(n)])# IMPR: it seems inefficient
 
 def compute_tableau(A, b, c, base_indexes):
     B = A[:, base_indexes]
@@ -167,5 +172,113 @@ def compose_tableau(x_B, z, reduced_costs, C):
     return tableau
 
 
+## FullTableau Method
+def fulltableau_method(A, b, c, n=None, m=None, base_indexes=None, max_iterations = 20):
+    '''Returns a list [exit_code, v].
+    exit_code can be 1, 0 or -1.
+    If exit_code is 1, then a finite optimal solution has been found. v is the solution vector.
+    If exit_code is 0, then we found out that there's no finite optimal solution. v is direction of improvement vector.
+    if exit_code is -1, we did max_iterations iterations and didn't get any of the previous results. v is the last feasible basic solution we were working on.
+    '''
+    if n == None:
+        n = A.cols
+    if m == None:
+        m = A.rows
+
+    # Indexes of variable in the base at first iteration
+    if base_indexes == None:
+        base_indexes = input_indexes("Enter columns indexes of initial base matrix separated by comma: ")
+    
+    if not is_standard_form(A, b, c):
+        raise ValueError("Problem not in standard form")
+
+    if len(base_indexes) != m:
+        raise ValueError(f"Number of base indexes doesn't match rank of technological coefficients matrix: {m}")
+
+
+    # Starting base matrix
+    B = A.col(base_indexes)
+
+    if B.det() == 0:
+        raise ValueError("Base matrix non invertible")
+
+    # print_problem(A, b, c)        # IMPR: doesn't work
+    print(f"In the base we have: {', '.join(get_variables_string_by_indexes(base_indexes))}")
+
+    x = None
+    counter = 0
+    while counter < max_iterations:
+        [x_B, z, rc, C] = compute_tableau(A, b, c, base_indexes)
+        tableau = compose_tableau(x_B, z, rc, C)
+        print_tableau(tableau)
+
+        # j = np.where(np.asarray(rc) < 0)[0][0]
+        j = first_negative_item_index(rc)
+        # print(rc)
+        # print(j)
+        if j == -1: # All reduced costs are nonnegative
+            x = compose_solution(x_B, base_indexes, n)
+            return [1, x]
+        else:
+            l = argmin_of_positive_fractions(x_B, A[:, j])
+            if l == -1:
+                d = -A.col(j)
+                return [0, d]
+
+            print(f"{get_variable_string_by_index(j)} enters the base, {get_variable_string_by_index(base_indexes[l])} exits the base")
+            #print(base_indexes)
+            base_indexes[l] = j
+            #print(base_indexes)
+
+            theta = A[l, j]
+            A = A / theta
+            b = b / theta
+
+        counter += 1
+
+    return [-1, x]
+
+## Two phases method
+def twophases_method(A, b, c, n=None, m=None, base_indexes=None):
+    # Phase 1
+    if n == None:
+        n = A.cols
+    if m == None:
+        m = A.rows
+
+    # Indexes of variable in the base at first iteration
+    if base_indexes == None:
+        base_indexes = input_indexes("Enter columns indexes of initial base matrix separated by comma: ")
+    base_indexes = zeros(1, m) # TEMP: I think I should not take base_indexes as argument...
+
+    # I think I should not check that all the rows are independent, because I read that you might find a null row at some point and that's ok (I mean you can handle it) - CHECK - IMPR
+    if not is_standard_form(A, b, c):
+        raise ValueError("Problem not in standard form")
+
+    if len(base_indexes) != m:
+        raise ValueError(f"Number of base indexes doesn't match rank of technological coefficients matrix: {m}")
+
+
+    print("Building auxiliary problem...")
+    A_new = A.row_join(eye(m))
+    c_new = zeros(1, n).row_join(ones(1, m))
+    #print_problem(A_new, b, c_new)     # IMPR
+    base_indexes = list(range(n, n + m))
+    
+    [exit_code, v] = fulltableau_method(A_new, b, c_new, n, m, base_indexes)
+
+    # Phase 2
+    if exit_code == 1:
+        if v.is_zero:
+            # return [1, v[*range(m)]]                  # It should work wwith python 3.11 (try it) - IMPR
+            return [1, v.row(list(range(m)))]        # Know that this might be a degenarate solution, you should handle this - IMPR
+        else:
+            return [0, v]
+            
+    elif exit_code == 0:
+        # This should never happen (by theory)
+        raise Exception("First Phase of Two Phases Method failed!")
+    else:
+        return [-1, v]
 
 
