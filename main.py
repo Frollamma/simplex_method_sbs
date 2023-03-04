@@ -1,24 +1,28 @@
 import numpy as np
-#import sympy as sp
+
+# import sympy as sp
 from utils import *
 from sympy.matrices import Matrix
+
 # from sympy import Rational, pprint
 # from fractions import Fraction
 
-'''
+"""
 Takes in input a linear programming problem in standard form
-'''
+"""
 
 
-A = input_matrix("Enter matrix A: ")                # Matrix of technical coefficents
-b = input_matrix("Enter vector b: ")                # Right-hand sides
-c = input_matrix("Enter vector c: ").transpose()    # Vector of costs (relative to the linear objective function)
+A = input_matrix("Enter matrix A: ")  # Matrix of technical coefficents
+b = input_matrix("Enter vector b: ")  # Right-hand sides
+c = input_matrix(
+    "Enter vector c: "
+).transpose()  # Vector of costs (relative to the linear objective function)
 
 
-A = Matrix([
-    [0, 1, 4],
-    [-2, 1, 6]
-])
+# A = Matrix([
+#     [0, 1, 4],
+#     [-2, 1, 6]
+# ])
 # A = Matrix([
 #     [0, 1, 4, 1, 0],
 #     [-2, 1, 6, 0, 1]
@@ -35,15 +39,15 @@ A = Matrix([
 # ])
 # A = Matrix([[1, 2, 3/2], [4, 5, 6], [7, 23, 5]])
 
-b = Matrix([2, 2])
+# b = Matrix([2, 2])
 # b = Matrix([12, 5])
 # b = Matrix([6, 4, 10, 8])
 
-c = Matrix([2, 3, 0]).transpose()
-#c = Matrix([-1, -1, 0, 0, 0, 0, 0, 0]).transpose()
+# c = Matrix([2, 3, 0]).transpose()
+# c = Matrix([-1, -1, 0, 0, 0, 0, 0, 0]).transpose()
 # c = Matrix([0, 0, 0, 0, 0, 0, 1, 1]).transpose()
 
-method = "TwoPhases"# TEMP
+method = "FullTableau"  # TEMP
 
 n = A.cols
 m = A.rows
@@ -76,7 +80,8 @@ elif method == "TwoPhases":
     elif exit_code == 0:
         print(f"There's no feasible basic solution for the original problem.")
     elif exit_code == -1:
-        print(f"Reached max iterations. Last feasible basic solution for the auxiliary problem is {v}")
+        print(
+            f"Reached max iterations. Last feasible basic solution for the auxiliary problem is {v}"
+        )
 else:
     raise ValueError(f"Method '{method}' not implemented")
-
