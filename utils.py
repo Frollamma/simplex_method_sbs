@@ -30,7 +30,6 @@ def argmin_of_positive_fractions(numerators, denominators):
         return -1
 
     l = i
-
     current_min = numerators[l] / denominators[l]
 
     for k in range(i + 1, n):
@@ -321,7 +320,7 @@ def twophases_method(A, b, c, n=None, m=None, base_indexes=None):
             return [
                 1,
                 v.row(range(m)),
-            ]  # Keep in mind that some auxiliary variables migth be still in base, you should handle it - IMPR
+            ]  # Keep in mind that some auxiliary variables might be still in base, you should handle it - IMPR
         else:
             return [0, v]
 
