@@ -17,7 +17,26 @@ b = input_matrix("Enter vector b: ")  # Right-hand sides
 c = input_matrix(
     "Enter vector c: "
 ).transpose()  # Vector of costs (relative to the linear objective function)
+method = input(
+    """Choose a resolution method:
+1) Complete (default)
+2) FullTableau
+3) TwoPhases
 
+>> """
+)
+default_method = "Complete"
+
+if method == "1":
+    method = "Complete"
+elif method == "2":
+    method = "FullTableau"
+elif method == "3":
+    method = "TwoPhases"
+elif method == "":
+    method = default_method
+else:
+    raise ValueError("Unknown method")
 
 # A = Matrix([
 #     [0, 1, 4],
@@ -47,7 +66,7 @@ c = input_matrix(
 # c = Matrix([-1, -1, 0, 0, 0, 0, 0, 0]).transpose()
 # c = Matrix([0, 0, 0, 0, 0, 0, 1, 1]).transpose()
 
-method = "FullTableau"  # TEMP
+# method = "FullTableau"  # TEMP
 
 n = A.cols
 m = A.rows
