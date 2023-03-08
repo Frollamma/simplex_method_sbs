@@ -33,7 +33,7 @@ def argmin_of_positive_fractions(numerators, denominators):
     current_min = numerators[l] / denominators[l]
 
     for k in range(i + 1, n):
-        if denominators[k] != 0:
+        if denominators[k] > 0:
             possible_min = numerators[k] / denominators[k]
             if possible_min < current_min:
                 l = k
@@ -116,11 +116,39 @@ def get_variables_string_by_indexes(indexes):
     return [get_variable_string_by_index(i) for i in indexes]
 
 
+def get_objective_function_string(c):
+    of_is_zero = True
+
+    of = ""
+    for i in range(len(c)):
+        if c[i] != 0:
+            of = (
+                of
+                + f"{str(c[i]) + ' ' if c[i] != 1 else ''}{get_variable_string_by_index(i)} + "
+            )
+            of_is_zero = False
+
+    if of_is_zero:
+        of = ""
+    else:
+        of = of[:-3]
+
+    return of
+
+
 ## Printing
 def print_problem(A, b, c, mode="plain"):
     """Mode can be \'plain\' or \'latex\'"""
-    print("We want to solve")
-    print(pretty(A), "x", "=", pretty(b))  # Doesn't display properly
+    # IMPR
+    # print("The equality constraints are")
+    # print(pretty(A), "x", "=", pretty(b))  # Doesn't display properly
+
+    # TEMP
+    print("The equality constraints are A x = b")
+    print("Where A = ")
+    pprint(A)
+    print("b =")
+    pprint(b)
 
 
 def print_tableau(tableau, mode="plain"):
@@ -181,9 +209,12 @@ def get_base_costs(c, base_indexes):
 
 def compose_solution(x_B, base_indexes, n):
     """n is solution lenght"""
-    return Matrix(
-        [x_B[base_indexes.index(i)] if i in base_indexes else 0 for i in range(n)]
-    )  # IMPR: it seems inefficient
+    x = zeros(n, 1)
+
+    for i in range(len(base_indexes)):
+        x[base_indexes[i]] = x_B[i]
+
+    return x
 
 
 def compute_tableau(A, b, c, base_indexes):
@@ -239,7 +270,7 @@ def fulltableau_method(A, b, c, n=None, m=None, base_indexes=None, max_iteration
     if B.det() == 0:
         raise ValueError("Base matrix non invertible")
 
-    # print_problem(A, b, c)        # IMPR: doesn't work
+    print_problem(A, b, c)
     print(
         f"In the base we have: {', '.join(get_variables_string_by_indexes(base_indexes))}"
     )
@@ -247,8 +278,8 @@ def fulltableau_method(A, b, c, n=None, m=None, base_indexes=None, max_iteration
     x = None
     counter = 0
     while counter < max_iterations:
-        [x_B, z, rc, C] = compute_tableau(A, b, c, base_indexes)
-        tableau = compose_tableau(x_B, z, rc, C)
+        [x_B, z, rc, A] = compute_tableau(A, b, c, base_indexes)
+        tableau = compose_tableau(x_B, z, rc, A)
         print_tableau(tableau)
 
         # j = np.where(np.asarray(rc) < 0)[0][0]
@@ -256,9 +287,11 @@ def fulltableau_method(A, b, c, n=None, m=None, base_indexes=None, max_iteration
         # print(rc)
         # print(j)
         if j == -1:  # All reduced costs are nonnegative
+            print(x_B)
             x = compose_solution(x_B, base_indexes, n)
             return [1, x]
         else:
+            print(A[:, j])
             l = argmin_of_positive_fractions(x_B, A[:, j])
             if l == -1:
                 d = -A.col(j)
@@ -289,28 +322,27 @@ def twophases_method(A, b, c, n=None, m=None, base_indexes=None):
         m = A.rows
 
     # Indexes of variable in the base at first iteration
-    if base_indexes == None:
-        base_indexes = input_indexes(
-            "Enter columns indexes of initial base matrix separated by comma: "
-        )
-    base_indexes = zeros(
-        1, m
-    )  # TEMP: I think I should not take base_indexes as argument...
+    # if base_indexes == None:
+    #     base_indexes = input_indexes(
+    #         "Enter columns indexes of initial base matrix separated by comma: "
+    #     )
+    # base_indexes = zeros(
+    #     1, m
+    # )  # TEMP: I think I should not take base_indexes as argument...
 
     # I think I should not check that all the rows are independent, because I read that you might find a null row at some point and that's ok (I mean you can handle it) - CHECK - IMPR
     if not is_standard_form(A, b, c):
         raise ValueError("Problem not in standard form")
 
-    if len(base_indexes) != m:
-        raise ValueError(
-            f"Number of base indexes doesn't match rank of technological coefficients matrix: {m}"
-        )
-
     print("Building auxiliary problem...")
+
     A_new = A.row_join(eye(m))
     c_new = zeros(1, n).row_join(ones(1, m))
     # print_problem(A_new, b, c_new)     # IMPR
     base_indexes = list(range(n, n + m))
+
+    print("We want to minimize")
+    print("z(x) = " + get_objective_function_string(c_new))
 
     [exit_code, v] = fulltableau_method(A_new, b, c_new, n, m, base_indexes)
 
@@ -325,7 +357,7 @@ def twophases_method(A, b, c, n=None, m=None, base_indexes=None):
             return [0, v]
 
     elif exit_code == 0:
-        # This should never happen (by theory)
+        # This should never happen (in theory)
         raise Exception("First Phase of Two Phases Method failed!")
     else:
         return [-1, v]

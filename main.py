@@ -25,6 +25,11 @@ method = input(
 
 >> """
 )
+# # Indexes of variable in the base at first iteration
+# base_indexes = input_indexes(
+#     "Enter columns indexes of initial base matrix separated by comma: "
+# )
+
 default_method = "Complete"
 
 if method == "1":
@@ -75,10 +80,14 @@ m = A.rows
 # if is_unimodular_matrix(A):
 #     print("Matrix A is unimodular!")
 
+print("We want to minimize")
+print("z(x) = " + get_objective_function_string(c))
+
 if method == "Complete":
     # This method is capable of choosing which of the other methods to use and when to use them
-    pass
+    raise NotImplementedError
 elif method == "FullTableau":
+    # [exit_code, v] = fulltableau_method(A, b, c, n, m, base_indexes)
     [exit_code, v] = fulltableau_method(A, b, c, n, m)
 
     if exit_code == 1:
@@ -96,6 +105,8 @@ elif method == "TwoPhases":
 
     if exit_code == 1:
         print(f"Found feasible basic solution for the original problem: {v}")
+        # Now, if there are auxiliary variable left in the base you should do pivoting operation to exchange them with other "ordinary" variable that are not in base.
+        # Then you should continue by taking the last tableau you got, "delete" the columns corresponding to the auxiliary variables, change the objective function to the original one and start the FullTableau method again keeping the variables in the last base you got (they should be all "ordinary").
     elif exit_code == 0:
         print(f"There's no feasible basic solution for the original problem.")
     elif exit_code == -1:
