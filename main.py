@@ -43,36 +43,6 @@ elif method == "":
 else:
     raise ValueError("Unknown method")
 
-# A = Matrix([
-#     [0, 1, 4],
-#     [-2, 1, 6]
-# ])
-# A = Matrix([
-#     [0, 1, 4, 1, 0],
-#     [-2, 1, 6, 0, 1]
-# ])
-# A = Matrix([
-#     [1, 0, 0, 0, 1, 0, 0, 0],
-#     [0, 1, 0, 0, 0, 1, 0, 0],
-#     [2, 5, -1, 0, 0, 0, 1, 0],
-#     [4, 2, 0, -1, 0, 0, 0, 1]
-# ])
-# A = Matrix([
-#     [3, -2, 1, 0],
-#     [1, 0, 0, 1]
-# ])
-# A = Matrix([[1, 2, 3/2], [4, 5, 6], [7, 23, 5]])
-
-# b = Matrix([2, 2])
-# b = Matrix([12, 5])
-# b = Matrix([6, 4, 10, 8])
-
-# c = Matrix([2, 3, 0]).transpose()
-# c = Matrix([-1, -1, 0, 0, 0, 0, 0, 0]).transpose()
-# c = Matrix([0, 0, 0, 0, 0, 0, 1, 1]).transpose()
-
-# method = "FullTableau"  # TEMP
-
 n = A.cols
 m = A.rows
 

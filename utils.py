@@ -270,7 +270,7 @@ def fulltableau_method(A, b, c, n=None, m=None, base_indexes=None, max_iteration
     if B.det() == 0:
         raise ValueError("Base matrix non invertible")
 
-    print_problem(A, b, c)
+    # print_problem(A, b, c)
     print(
         f"In the base we have: {', '.join(get_variables_string_by_indexes(base_indexes))}"
     )
@@ -291,7 +291,7 @@ def fulltableau_method(A, b, c, n=None, m=None, base_indexes=None, max_iteration
             x = compose_solution(x_B, base_indexes, n)
             return [1, x]
         else:
-            print(A[:, j])
+            # print(A[:, j])
             l = argmin_of_positive_fractions(x_B, A[:, j])
             if l == -1:
                 d = -A.col(j)
